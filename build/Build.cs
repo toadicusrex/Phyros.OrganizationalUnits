@@ -73,6 +73,7 @@ class Build : NukeBuild
 			var mainProjectPath = RootDirectory / "src" / "Phyros.OrganizationalUnits" / "Phyros.OrganizationalUnits.csproj";
 			if (!File.Exists(mainProjectPath))
 				throw new Exception($"Could not find main project at '{mainProjectPath}'.");
+			Console.WriteLine($"[Pack] Using GitVersion.NuGetVersion: {GitVersion?.NuGetVersion ?? "<null>"}");
 			DotNetTasks.DotNetPack(s => s
 				.SetProject(mainProjectPath)
 				.SetConfiguration(Configuration)
@@ -99,7 +100,8 @@ class Build : NukeBuild
 				DotNetTasks.DotNetNuGetPush(s => s
 					.SetTargetPath(packageFile)
 					.SetSource(NuGetSource)
-					.SetApiKey(NuGetApiKey));
+					.SetApiKey(NuGetApiKey)
+					.SetProcessArgumentConfigurator((args, _) => args.Add("--skip-duplicate")));
 			}
 		});
 
