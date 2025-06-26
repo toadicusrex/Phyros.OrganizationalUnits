@@ -30,6 +30,7 @@ class Build : NukeBuild
 
 	[Solution("src/Phyros.OrganizationalUnits.sln")] readonly Solution Solution;
 	[GitVersion] readonly GitVersion GitVersion;
+	[Parameter("NuGet version from GitVersion")] readonly string GitVersionNuGetVersion;
 
 	Target Clean => _ => _
 			.Before(Restore)
@@ -69,15 +70,15 @@ class Build : NukeBuild
 		.DependsOn(Compile)
 		.Executes(() =>
 		{
-			// Explicitly set the path to the main project to avoid packing _build.csproj
 			var mainProjectPath = RootDirectory / "src" / "Phyros.OrganizationalUnits" / "Phyros.OrganizationalUnits.csproj";
 			if (!File.Exists(mainProjectPath))
 				throw new Exception($"Could not find main project at '{mainProjectPath}'.");
-			Console.WriteLine($"[Pack] Using GitVersion.NuGetVersion: {GitVersion?.NuGetVersion ?? "<null>"}");
+			var version = GitVersion?.NuGetVersion ?? GitVersionNuGetVersion ?? "1.0.0";
+			Console.WriteLine($"[Pack] Using version: {version}");
 			DotNetTasks.DotNetPack(s => s
 				.SetProject(mainProjectPath)
 				.SetConfiguration(Configuration)
-				.SetVersion(GitVersion.NuGetVersion)
+				.SetVersion(version)
 				.SetOutputDirectory(RootDirectory / "artifacts")
 				.EnableIncludeSymbols()
 				.SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg));
