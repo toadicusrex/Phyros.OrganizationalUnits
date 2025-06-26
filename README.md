@@ -1,5 +1,9 @@
 # Phyros.OrganizationalUnits
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Build Status](https://github.com/toadicusrex/Phyros.OrganizationalUnits/actions/workflows/ci.yml/badge.svg)](https://github.com/toadicusrex/Phyros.OrganizationalUnits/actions)
+[![NuGet](https://img.shields.io/nuget/v/Phyros.OrganizationalUnits.svg?logo=nuget)](https://www.nuget.org/packages/Phyros.OrganizationalUnits)
+
 A modern, configurable C# library for representing and manipulating hierarchical organizational units (OUs) in a generic, privacy-friendly way.
 
 ## Features
@@ -15,7 +19,7 @@ A modern, configurable C# library for representing and manipulating hierarchical
 using Phyros.OrganizationalUnits;
 
 // Parse an OU string
-override base OU if needed:
+// override base OU if needed:
 OrganizationalUnitConfig.BaseOrganizationalUnit = "MyRoot";
 var ou = OrganizationalUnit.Parse("world.country.region.city");
 
@@ -40,6 +44,7 @@ string[] nodes = ou.GetFullyQualifiedNodes();
 - Automated with GitHub Actions
 - Versioning via GitVersion (see `GitVersion.yml`)
 - NuGet packages published to [GitHub Packages](https://github.com/toadicusrex?tab=packages)
+- [MIT License](LICENSE)
 
 ## Configuration
 - **Base OU:** Set at runtime via `OrganizationalUnitConfig.BaseOrganizationalUnit`
