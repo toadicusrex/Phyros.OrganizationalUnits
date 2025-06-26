@@ -79,8 +79,6 @@ class Build : NukeBuild
 
 	Target Publish => _ => _
 		.DependsOn(Pack)
-		.Requires(() => NuGetApiKey)
-		.Requires(() => NuGetSource)
 		.OnlyWhenStatic(() => IsServerBuild)
 		.Executes(() =>
 		{
