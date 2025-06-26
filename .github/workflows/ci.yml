@@ -46,8 +46,10 @@ jobs:
       - name: 'Publish: output'
         uses: actions/upload-artifact@v4
         with:
-          name: output
-          path: output
+          name: nuget-packages
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
       - name: Get version from GitVersion
         id: gitversion
         run: |
