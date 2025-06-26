@@ -69,11 +69,12 @@ class Build : NukeBuild
 		.DependsOn(Compile)
 		.Executes(() =>
 		{
-			var mainProject = Solution.AllProjects.FirstOrDefault(p => p.Name == "Phyros.OrganizationalUnits");
-			if (mainProject == null)
-				throw new Exception("Could not find main project 'Phyros.OrganizationalUnits' in solution.");
+			// Explicitly set the path to the main project to avoid packing _build.csproj
+			var mainProjectPath = RootDirectory / "src" / "Phyros.OrganizationalUnits" / "Phyros.OrganizationalUnits.csproj";
+			if (!File.Exists(mainProjectPath))
+				throw new Exception($"Could not find main project at '{mainProjectPath}'.");
 			DotNetTasks.DotNetPack(s => s
-				.SetProject(mainProject)
+				.SetProject(mainProjectPath)
 				.SetConfiguration(Configuration)
 				.SetVersion(GitVersion.NuGetVersion)
 				.SetOutputDirectory(RootDirectory / "artifacts")
