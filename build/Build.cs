@@ -85,6 +85,11 @@ class Build : NukeBuild
 		.Executes(() =>
 		{
 			var artifactsDir = Path.Combine(RootDirectory, "artifacts");
+			if (!Directory.Exists(artifactsDir))
+			{
+				Console.WriteLine($"[Publish] Artifacts directory '{artifactsDir}' does not exist. Skipping publish.");
+				return;
+			}
 			var packageFiles = Directory.GetFiles(artifactsDir, "*.nupkg");
 			foreach (var packageFile in packageFiles)
 			{
