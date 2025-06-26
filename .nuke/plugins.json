@@ -1,0 +1,6 @@
+{
+  "$schema": "https://nuke.build/schema/plugins.schema.json",
+  "plugins": [
+    "GitVersion"
+  ]
+}
