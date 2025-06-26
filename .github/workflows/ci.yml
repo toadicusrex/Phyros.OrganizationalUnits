@@ -37,6 +37,12 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
+      - name: Get version from GitVersion
+        id: gitversion
+        run: |
+          dotnet tool install --global GitVersion.Tool
+          dotnet gitversion /output json > gitversion.json
+          echo "version=$(jq -r .SemVer gitversion.json)" >> $GITHUB_OUTPUT
       - name: 'Run: Publish'
         run: ./build.cmd Publish --host GitHubActions
         env:
@@ -51,12 +57,6 @@ jobs:
           path: |
             artifacts/*.nupkg
             artifacts/*.snupkg
-      - name: Get version from GitVersion
-        id: gitversion
-        run: |
-          dotnet tool install --global GitVersion.Tool
-          dotnet gitversion /output json > gitversion.json
-          echo "version=$(jq -r .SemVer gitversion.json)" >> $GITHUB_OUTPUT
       - name: Create and push tag
         run: |
           git config user.name "github-actions[bot]"
