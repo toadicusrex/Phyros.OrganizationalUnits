@@ -43,3 +43,18 @@ jobs:
         with:
           name: output
           path: output
+      - name: Get version from GitVersion
+        id: gitversion
+        run: |
+          dotnet tool install --global GitVersion.Tool
+          export PATH="$PATH:/home/runner/.dotnet/tools"
+          GitVersion /output json > gitversion.json
+          echo "version=$(jq -r .SemVer gitversion.json)" >> $GITHUB_OUTPUT
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag v${{ steps.gitversion.outputs.version }}
+          git push origin v${{ steps.gitversion.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
