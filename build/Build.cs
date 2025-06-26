@@ -69,7 +69,9 @@ class Build : NukeBuild
 		.DependsOn(Compile)
 		.Executes(() =>
 		{
-			var mainProject = Solution.AllProjects.First(p => !p.Name.EndsWith("Test") && !p.Name.EndsWith("Tests"));
+			var mainProject = Solution.AllProjects.FirstOrDefault(p => p.Name == "Phyros.OrganizationalUnits");
+			if (mainProject == null)
+				throw new Exception("Could not find main project 'Phyros.OrganizationalUnits' in solution.");
 			DotNetTasks.DotNetPack(s => s
 				.SetProject(mainProject)
 				.SetConfiguration(Configuration)
