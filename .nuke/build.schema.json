@@ -27,7 +27,7 @@
         "Clean",
         "Compile",
         "Pack",
-        "Push",
+        "Publish",
         "Restore"
       ]
     },

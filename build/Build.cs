@@ -101,7 +101,7 @@ class Build : NukeBuild
 					.SetTargetPath(packageFile)
 					.SetSource(NuGetSource)
 					.SetApiKey(NuGetApiKey)
-					.SetProcessArgumentConfigurator((args, _) => args.Add("--skip-duplicate")));
+					.SetProcessAdditionalArguments(new[] { "--skip-duplicate" }));
 			}
 		});
 
