@@ -47,8 +47,7 @@ jobs:
         id: gitversion
         run: |
           dotnet tool install --global GitVersion.Tool
-          export PATH="$PATH:/home/runner/.dotnet/tools"
-          GitVersion /output json > gitversion.json
+          dotnet gitversion /output json > gitversion.json
           echo "version=$(jq -r .SemVer gitversion.json)" >> $GITHUB_OUTPUT
       - name: Create and push tag
         run: |
