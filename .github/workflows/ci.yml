@@ -40,6 +40,7 @@ jobs:
       - name: 'Run: Publish'
         run: ./build.cmd Publish
         env:
+          PACKAGES_API_KEY: ${{ secrets.PACKAGES_API_KEY }}
           ReadPackagesToken: ${{ secrets.READ_PACKAGES_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Publish: output'
