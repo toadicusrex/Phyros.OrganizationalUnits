@@ -110,6 +110,10 @@
             "Release"
           ]
         },
+        "GitVersionNuGetVersion": {
+          "type": "string",
+          "description": "NuGet version from GitVersion"
+        },
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded. Default is src/Phyros.OrganizationalUnits.sln"
