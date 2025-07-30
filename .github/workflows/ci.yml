@@ -50,11 +50,13 @@ jobs:
         run: |
           if [ -z "${{ secrets.PACKAGES_API_KEY }}" ]; then echo "PACKAGES_API_KEY is missing!"; exit 1; fi
           if [ -z "${{ secrets.GITHUB_TOKEN }}" ]; then echo "GITHUB_TOKEN is missing!"; exit 1; fi
+          if [ -z "${{ secrets.NUGET_ORG_API_KEY }}" ]; then echo "NUGET_ORG_API_KEY is missing!"; exit 1; fi
           if [ -z "${{ steps.gitversion.outputs.version }}" ]; then echo "GITVERSION_NUGET_VERSION is missing!"; exit 1; fi
-      - name: 'Run: Publish'
-        run: ./build.cmd Publish --host GitHubActions
+      - name: 'Run: PublishToNugetDotOrg'
+        run: ./build.cmd PublishToNugetDotOrg --host GitHubActions
         env:
           PACKAGES_API_KEY: ${{ secrets.PACKAGES_API_KEY }}
+          NUGET_ORG_API_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITVERSION_NUGET_VERSION: ${{ steps.gitversion.outputs.version }}
       - name: 'Publish: output'
