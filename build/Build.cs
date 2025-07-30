@@ -25,8 +25,13 @@ class Build : NukeBuild
 	[Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
 	readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
+	// API key for GitHub Packages
 	readonly string NuGetApiKey = Environment.GetEnvironmentVariable("PACKAGES_API_KEY");
 	readonly string NuGetSource = "https://nuget.pkg.github.com/toadicusrex/index.json";
+	
+	// API key for NuGet.org
+	readonly string NuGetOrgApiKey = Environment.GetEnvironmentVariable("NUGET_ORG_API_KEY");
+	readonly string NuGetOrgSource = "https://api.nuget.org/v3/index.json";
 
 	[Solution("src/Phyros.OrganizationalUnits.sln")] readonly Solution Solution;
 	[GitVersion] readonly GitVersion GitVersion;
@@ -84,6 +89,10 @@ class Build : NukeBuild
 				.SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg));
 		});
 
+	/// <summary>
+	/// Publishes packages to GitHub Packages repository
+	/// Requires PACKAGES_API_KEY environment variable to be set
+	/// </summary>
 	Target Publish => _ => _
 		.DependsOn(Pack)
 		.OnlyWhenStatic(() => IsServerBuild)
@@ -106,5 +115,38 @@ class Build : NukeBuild
 			}
 		});
 
-	public static int Main() => Execute<Build>(x => IsServerBuild ? x.Publish : x.Pack);
+    /// <summary>
+    /// Publishes packages to NuGet.org
+    /// Requires NUGET_ORG_API_KEY environment variable to be set
+    /// </summary>
+    Target PublishToNugetDotOrg => _ => _
+        .DependsOn(Publish)
+        .OnlyWhenStatic(() => IsServerBuild)
+        .Executes(() =>
+        {
+            var artifactsDir = Path.Combine(RootDirectory, "artifacts");
+            if (!Directory.Exists(artifactsDir))
+            {
+                Console.WriteLine($"[PublishToNugetDotOrg] Artifacts directory '{artifactsDir}' does not exist. Skipping publish.");
+                return;
+            }
+            
+            if (string.IsNullOrEmpty(NuGetOrgApiKey))
+            {
+                Console.WriteLine("[PublishToNugetDotOrg] NuGet.org API key (NUGET_ORG_API_KEY) not provided. Skipping publish to NuGet.org.");
+                return;
+            }
+            
+            var packageFiles = Directory.GetFiles(artifactsDir, "*.nupkg");
+            foreach (var packageFile in packageFiles)
+            {
+                Console.WriteLine($"[PublishToNugetDotOrg] Publishing {Path.GetFileName(packageFile)} to NuGet.org");
+                DotNetTasks.DotNetNuGetPush(s => s
+                    .SetTargetPath(packageFile)
+                    .SetSource(NuGetOrgSource)
+                    .SetApiKey(NuGetOrgApiKey)
+                    .SetProcessAdditionalArguments(new[] { "--skip-duplicate" }));
+            }
+        });
+    public static int Main() => Execute<Build>(x => IsServerBuild ? x.PublishToNugetDotOrg : x.Pack);
 }
