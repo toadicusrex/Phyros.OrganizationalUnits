@@ -5,10 +5,43 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
+		
+		<!-- Package metadata -->
+		<PackageId>Phyros.OrganizationalUnits</PackageId>
+		<Authors>toadicusrex</Authors>
+		<Company>Phyros</Company>
+		<Description>A library for handling hierarchical organizational units with support for parsing, string representation, and node management.</Description>
+		<PackageTags>organizational-units;hierarchy;organizations</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/toadicusrex/Phyros.OrganizationalUnits</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/toadicusrex/Phyros.OrganizationalUnits.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Copyright>© $([System.DateTime]::Now.Year) toadicusrex</Copyright>
+		
+		<!-- Source Link configuration for debugging -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+		
+		<!-- XML Documentation -->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn> <!-- Disable warning for missing XML comments -->
 	</PropertyGroup>
-
+	
 	<ItemGroup>
 		<InternalsVisibleTo Include="Phyros.OrganizationalUnits.Tests" />
 		<InternalsVisibleTo Include="Phyros.OrganizationalUnits.NetFramework.Tests" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 	</ItemGroup>
 </Project>

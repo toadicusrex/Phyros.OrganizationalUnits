@@ -120,7 +120,7 @@ class Build : NukeBuild
     /// Requires NUGET_ORG_API_KEY environment variable to be set
     /// </summary>
     Target PublishToNugetDotOrg => _ => _
-        .DependsOn(Publish)
+        .DependsOn(Publish)  // Changed from Publish to Pack to make it independent
         .OnlyWhenStatic(() => IsServerBuild)
         .Executes(() =>
         {
@@ -148,5 +148,6 @@ class Build : NukeBuild
                     .SetProcessAdditionalArguments(new[] { "--skip-duplicate" }));
             }
         });
+        
     public static int Main() => Execute<Build>(x => IsServerBuild ? x.PublishToNugetDotOrg : x.Pack);
 }

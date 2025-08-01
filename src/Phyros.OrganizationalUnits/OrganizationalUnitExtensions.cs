@@ -44,11 +44,11 @@ public static class OrganizationalUnitExtensions
 	}
 
 	/// <summary>
-	///   <para>
-	/// Determines whether [is a direct parent of] [the specified potential child], i.e. not a parent more than one node away, but is a parent and is not the child itself.</para>
-	/// <param name="orgUnitInQuestion">The organizational unit.</param>
-	/// <param name="potentialChild">The potential child.</param>
-	/// <returns>
+	///   <para> Determines whether [is a direct parent of] [the specified potential child], i.e. not a parent more than one node away, but is a parent and is not the child itself.</para> 
+	/// </summary>
+	///		<param name="orgUnitInQuestion">The organizational unit.</param>
+	///		<param name="potentialChild">The potential child.</param>
+	///		<returns>
 	///   <c>true</c> if [is parent of] [the specified potential child]; otherwise, <c>false</c>.</returns>
 	public static bool IsParentOf(this OrganizationalUnit orgUnitInQuestion, OrganizationalUnit potentialChild)
 	{
