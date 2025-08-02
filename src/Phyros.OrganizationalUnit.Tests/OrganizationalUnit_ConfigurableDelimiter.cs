@@ -25,12 +25,12 @@ public class OrganizationalUnit_ConfigurableDelimiter
 		var ou = OrganizationalUnit.Parse(ouString, config);
 
 		// Verify nodes are correctly parsed
-		ou.Nodes.Length.ShouldBe(5); // 4 nodes + empty base node
-		ou.Nodes[0].ShouldBe("city");
-		ou.Nodes[1].ShouldBe("region");
-		ou.Nodes[2].ShouldBe("country");
-		ou.Nodes[3].ShouldBe("world");
-		ou.Nodes[4].ShouldBe(string.Empty);
+		ou.Nodes.Length.ShouldBe(4); // 4 nodes + empty base node
+
+		ou.Nodes[0].ShouldBe("world");
+		ou.Nodes[1].ShouldBe("country");
+		ou.Nodes[2].ShouldBe("region");
+		ou.Nodes[3].ShouldBe("city");
 
 		// Test serialization with new delimiter
 		ou.ToString().ShouldBe(ouString);
@@ -38,11 +38,11 @@ public class OrganizationalUnit_ConfigurableDelimiter
 		// Test fully qualified nodes with new delimiter
 		var fqNodes = ou.GetFullyQualifiedNodes();
 		fqNodes.Length.ShouldBe(5);
-		fqNodes[0].ShouldBe("world/country/region/city");
-		fqNodes[1].ShouldBe("world/country/region");
+		fqNodes[0].ShouldBe("");
+		fqNodes[1].ShouldBe("world");
 		fqNodes[2].ShouldBe("world/country");
-		fqNodes[3].ShouldBe("world");
-		fqNodes[4].ShouldBe(string.Empty);
+		fqNodes[3].ShouldBe("world/country/region");
+		fqNodes[4].ShouldBe("world/country/region/city");
 	}
 
 	[Fact]
@@ -61,7 +61,7 @@ public class OrganizationalUnit_ConfigurableDelimiter
 		for (int i = 0; i < 1000; i++)
 		{
 			var ou = OrganizationalUnit.Parse(ouString, config);
-			ou.Nodes.Length.ShouldBe(17); // 16 nodes + empty base node
+			ou.Nodes.Length.ShouldBe(16); // 16 nodes
 		}
 	}
 }

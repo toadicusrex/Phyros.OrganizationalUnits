@@ -1,4 +1,4 @@
-using Shouldly;
+﻿using Shouldly;
 using Xunit.Abstractions;
 
 namespace Phyros.OrganizationalUnits.Tests;
@@ -13,11 +13,11 @@ public class OrganizationalUnit_ToUrlString
 	}
 
 	[Theory]
-	// make sure the last node is an empty string to represent the "base" node.
-	[InlineData("Core", "")]
-	[InlineData("one", "One", "")]
-	[InlineData("two.one", "One", "Two", "")]
-	[InlineData("three.two.one", "One", "Two", "Three", "")]
+	// Now the empty base node should be at the beginning, not the end
+	[InlineData("core", "core")]
+	[InlineData("one", "one")]
+	[InlineData("one.two", "one", "two")]
+	[InlineData("one.two.three", "one", "two", "three")]
 	public void Properly_serializes(string expectedValue, params string[] nodes)
 	{
 		var organizationalUnit = new OrganizationalUnit(nodes);

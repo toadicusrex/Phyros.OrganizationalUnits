@@ -9,21 +9,29 @@ public static class OrganizationalUnitExtensions
 	///   <c>true</c> if [is descendant of] [the specified potential parent]; otherwise, <c>false</c>.</returns>
 	public static bool IsDescendantOf(this OrganizationalUnit orgUnitInQuestion, OrganizationalUnit potentialParent)
 	{
-		if (orgUnitInQuestion.Nodes.Length < potentialParent.Nodes.Length) return false;
-		int offset = orgUnitInQuestion.Nodes.Length - potentialParent.Nodes.Length;
+		// With nodes ordered from least specific to most specific, a descendant unit will:
+		// 1. Have strictly more nodes than its parent
+		// 2. The first N nodes of the descendant will match all nodes of the parent
+		
+		// Can't be a descendant if it has fewer nodes than the parent
+		if (orgUnitInQuestion.Nodes.Length <= potentialParent.Nodes.Length) 
+			return false;
+		
+		// Check if all parent nodes match the corresponding nodes in the child
 		for (int i = 0; i < potentialParent.Nodes.Length; i++)
 		{
-			if (!string.Equals(orgUnitInQuestion.Nodes[offset + i], potentialParent.Nodes[i], StringComparison.Ordinal))
+			if (!string.Equals(orgUnitInQuestion.Nodes[i], potentialParent.Nodes[i], StringComparison.Ordinal))
 				return false;
 		}
+		
 		return true;
 	}
 
 	/// <summary>Determines whether [is ancestor of] [the specified potential descendant].</summary>
 	/// <param name="orgUnitInQuestion">The organizational unit.</param>
-	/// <param name="potentialDescendent">The potential parent.</param>
+	/// <param name="potentialDescendent">The potential child.</param>
 	/// <returns>
-	///   <c>true</c> if [is descendant of] [the specified potential parent]; otherwise, <c>false</c>.</returns>
+	///   <c>true</c> if [is ancestor of] [the specified potential descendant]; otherwise, <c>false</c>.</returns>
 	public static bool IsAncestorOf(this OrganizationalUnit orgUnitInQuestion, OrganizationalUnit potentialDescendent)
 	{
 		return potentialDescendent.IsDescendantOf(orgUnitInQuestion);
@@ -39,8 +47,9 @@ public static class OrganizationalUnitExtensions
 	///   <c>true</c> if [is child of] [the specified potential parent]; otherwise, <c>false</c>.</returns>
 	public static bool IsChildOf(this OrganizationalUnit orgUnitInQuestion, OrganizationalUnit potentialParent)
 	{
-		// verify that child nodes is exactly one node longer than parent nodes and that it's a descendant of the potential parent
-		return orgUnitInQuestion.Nodes.Length == potentialParent.Nodes.Length + 1 && orgUnitInQuestion.IsDescendantOf(potentialParent);
+		// A child has exactly one more node than its parent and is a descendant of the potential parent
+		return orgUnitInQuestion.Nodes.Length == potentialParent.Nodes.Length + 1 && 
+		       orgUnitInQuestion.IsDescendantOf(potentialParent);
 	}
 
 	/// <summary>

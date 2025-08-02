@@ -2,76 +2,106 @@
 
 public class OrganizationalUnit
 {
-	/// <summary>Nodes of the organizational unit are ordered from most specific to least specific, i.e. ["child", "household", "city", "state", "country", "continent", "planet"] etc.
-	/// Nodes represent units of organization/containment.  Note that the empty "base" node is always last.</summary>
-	public readonly string[] Nodes;
+	/// <summary>
+	/// Nodes of the organizational unit are ordered from least specific to most specific, 
+	/// i.e. ["country", "state", "city", "household", "child"] etc.
+	/// Nodes represent units of organization/containment. The base organizational unit 
+	/// is represented by an empty array.
+	/// </summary>
+	private readonly string[] _nodes; // Private backing field	
+	
+	/// <summary>
+	/// Gets the nodes of this organizational unit. All nodes are stored in lowercase for consistent case-insensitive behavior.
+	/// </summary>
+	public string[] Nodes => _nodes;	
+
 	private readonly OrganizationalUnitConfig _config;
 
 	/// <summary>Initializes a new instance of the <see cref="OrganizationalUnit" /> targeted to the "Empty" organizational unit that represents the base.</summary>
 	public OrganizationalUnit(OrganizationalUnitConfig? config = null) : this(Array.Empty<string>(), config)
 	{
-		
 	}
 
 	/// <summary>Initializes a new instance of the <see cref="OrganizationalUnit" /> class from a string representation.</summary>
 	/// <param name="organizationalUnitString">The organizational unit string to parse.</param>
 	/// <param name="config"></param>
-	public OrganizationalUnit(string organizationalUnitString, OrganizationalUnitConfig? config = null) : this(Parse(organizationalUnitString).Nodes, config)
+	public OrganizationalUnit(string organizationalUnitString, OrganizationalUnitConfig? config = null) 
+		: this(ParseToArray(organizationalUnitString, config), config)
 	{
 	}
 
 	internal OrganizationalUnit(IEnumerable<string> nodes, OrganizationalUnitConfig? config = null)
 	{
 		_config = config ?? OrganizationalUnitConfig.Default;
-		Nodes = nodes.Select(x => x.ToLower()).ToArray();
+		
+		// Handle normalization at construction time
+		var nodeArray = nodes?.ToArray() ?? Array.Empty<string>();
+		
+		// Handle old format where empty node was at the end
+		if (nodeArray.Length > 0 && string.IsNullOrEmpty(nodeArray[nodeArray.Length - 1]))
+		{
+			// Create a new array without the empty node at the end
+			var correctedArray = new string[nodeArray.Length - 1];
+			if (nodeArray.Length > 1)
+			{
+				Array.Copy(nodeArray, 0, correctedArray, 0, nodeArray.Length - 1);
+			}
+			nodeArray = correctedArray;
+		}
+		
+		// Apply ToLower for case-insensitivity
+		_nodes = nodeArray.Select(x => x?.ToLower() ?? string.Empty).ToArray();
 	}
+
 	/// <summary>
-	/// Gets fully qualified nodes in order from least specific to most specific in a qualified format.  ["child", "household", "city"] would become the fully qualified nodes ["city.household.child", "city.household", "city", ""]
-	/// Note the empty node representing base as the final node.
+	/// Gets fully qualified nodes in order from most complete to least complete in a qualified format.  
+	/// For nodes ["country", "state", "city"] this would become the fully qualified nodes 
+	/// ["", "country", "country.state", "country.state.city"]
+	/// Note that the empty string as the first element represents the base.
 	/// </summary>
 	/// <returns></returns>
 	public string[] GetFullyQualifiedNodes()
 	{
-		if (Nodes.Length == 1)
+		// Create an array with room for all node combinations plus the empty string at the beginning
+		var result = new string[_nodes.Length + 1];
+		
+		// First element is always the empty base node
+		result[0] = string.Empty;
+		
+		// Generate fully qualified paths, from least specific to most specific
+		for (int i = 0; i < _nodes.Length; i++)
 		{
-			return new[] { string.Empty };
-		}
-		var fullyQualifiedNodes = new List<string>();
-		var reversed = Nodes.Reverse().Skip(1).ToList();
-		var count = reversed.Count;
-		for (var i = 0; i < count; i++)
-		{
+			// For each iteration, take the first (i+1) nodes
+			var nodesToInclude = _nodes.Take(i + 1);
+			
 #if NETSTANDARD2_0
-			fullyQualifiedNodes.Add(string.Join(_config.Delimiter.ToString(), reversed.Take(count - i)));
+			result[i + 1] = string.Join(_config.Delimiter.ToString(), nodesToInclude);
 #else
-			fullyQualifiedNodes.Add(string.Join(_config.Delimiter, reversed.Take(count - i)));
+			result[i + 1] = string.Join(_config.Delimiter, nodesToInclude);
 #endif
 		}
-		// add the base node
-		fullyQualifiedNodes.Add(String.Empty);
-		return fullyQualifiedNodes.ToArray();
+		
+		return result;
 	}
 
 	/// <summary>
-	/// Converts an organizational unit to a URL friendly structure (i.e. the base node is an empty string).  
+	/// Converts an organizational unit to a URL friendly structure.
 	/// </summary>
 	/// <returns></returns>
 	public override string ToString()
 	{
-		if (Nodes.Length == 1)
-		{
-			return String.Empty;
-		}
-		var reversed = Nodes.Reverse().Skip(1).ToList();
+		if (_nodes.Length == 0)
+			return string.Empty;
+		
 #if NETSTANDARD2_0
-		return Nodes.Length == 1 ? Nodes[0] : string.Join(_config.Delimiter.ToString(), reversed);
+        return string.Join(_config.Delimiter.ToString(), _nodes);
 #else
-		return Nodes.Length == 1 ? Nodes[0] : string.Join(_config.Delimiter, reversed);
+		return string.Join(_config.Delimiter, _nodes);
 #endif
 	}
 
 	/// <summary>
-	/// Converts an organizational unit to a URL friendly structure (i.e. the root node is replaced by <see cref="OrganizationalUnitConfig.BaseOrganizationalUnit"/>).  
+	/// Converts an organizational unit to a URL friendly structure (i.e. the root node is replaced by <see cref="OrganizationalUnitConfig.BaseOrganizationalUnitAlias"/>).  
 	/// </summary>
 	/// <returns></returns>
 	public string ToUrlString()
@@ -79,7 +109,7 @@ public class OrganizationalUnit
 		var serialized = ToString();
 		if (string.IsNullOrEmpty(serialized))
 		{
-			return _config.BaseOrganizationalUnit;
+			return _config.BaseOrganizationalUnitAlias;
 		}
 		else
 		{
@@ -91,7 +121,7 @@ public class OrganizationalUnit
 	/// Implicitly converts a string to an <see cref="OrganizationalUnit" /> by parsing it.
 	/// </summary>
 	/// <param name="organizationalUnitString">The organizational unit string.</param>
-	public static implicit operator OrganizationalUnit(string organizationalUnitString) => Parse(organizationalUnitString);
+	public static implicit operator OrganizationalUnit(string organizationalUnitString) => new OrganizationalUnit(ParseToArray(organizationalUnitString), OrganizationalUnitConfig.Default);
 
 	/// <summary>
 	/// Implicitly converts an <see cref="OrganizationalUnit" /> to its string representation.
@@ -100,46 +130,83 @@ public class OrganizationalUnit
 	public static implicit operator string(OrganizationalUnit organizationalUnit) => organizationalUnit.ToString();
 
 	/// <summary>
-	/// Parses an organizational unit string into the OrganizationalUnit structure.  Nodes in the organizational unit are ordered from most specific to least specific, describing "containment" (i.e. node 1 is contained by node 2, etc.).  Note that the "base" node is always the last node in the Organizational Unit, suggesting that all Organizational Units fall under the base container.
+	/// Parses an organizational unit string into an array of strings. Nodes in the organizational unit are ordered from least specific to most specific,
+	/// describing "containment" (i.e. node 1 is contained by node 2, etc.).
 	/// </summary>
 	/// <param name="organizationalUnitString">The organizational unit string.</param>
 	/// <param name="config"></param>
-	/// <returns>
-	///   <br />
-	/// </returns>
-	public static OrganizationalUnit Parse(string? organizationalUnitString, OrganizationalUnitConfig? config = null)
+	/// <returns>Array of nodes</returns>
+	/// <exception cref="ArgumentException">Thrown when any node is empty or whitespace.</exception>
+	private static string[] ParseToArray(string? organizationalUnitString, OrganizationalUnitConfig? config = null)
 	{
 		config ??= OrganizationalUnitConfig.Default;
 		if (string.IsNullOrWhiteSpace(organizationalUnitString))
 		{
-			return new OrganizationalUnit(new[] { string.Empty }, config);
+			return Array.Empty<string>();
 		}
 
-		// At this point, organizationalUnitString is not null, empty, or whitespace
-		var orgUnitStr = organizationalUnitString!;
-		if (orgUnitStr.Equals(config.BaseOrganizationalUnit, StringComparison.InvariantCultureIgnoreCase))
+		// Direct match with base alias case - use case-insensitive comparison
+		if (string.Equals(organizationalUnitString, config.BaseOrganizationalUnitAlias, StringComparison.OrdinalIgnoreCase))
 		{
-			return new OrganizationalUnit(new[] { string.Empty }, config);
+			return Array.Empty<string>();
 		}
-		var split = orgUnitStr.ToLower().Split(config.Delimiter).Reverse().ToList();
-		// Check for empty or whitespace nodes (except for the final base node)
-		if (split.Any(n => string.IsNullOrWhiteSpace(n)))
+
+		// Split the string into parts
+		var parts = organizationalUnitString!.Split(config.Delimiter);
+    
+		// Check if the first part is the base organizational unit alias or an empty string
+		bool startsWithBaseOU = parts.Length > 0 && 
+			(string.Equals(parts[0], config.BaseOrganizationalUnitAlias, StringComparison.OrdinalIgnoreCase) || 
+			 string.IsNullOrEmpty(parts[0]));
+    
+		// Check for empty nodes except when it's the first node and we're dealing with a base OU alias
+		for (int i = 0; i < parts.Length; i++)
 		{
-			throw new ArgumentException("Organizational unit string contains empty or whitespace node(s).", nameof(organizationalUnitString));
+			if (string.IsNullOrWhiteSpace(parts[i]) && !(i == 0 && startsWithBaseOU))
+			{
+				throw new ArgumentException(
+					"Organizational unit string cannot have empty nodes, except for the root node.", 
+					nameof(organizationalUnitString));
+			}
 		}
-		split.Add(string.Empty);
-		return new OrganizationalUnit(split.ToArray(), config);
+		
+		// Skip the first part if it's the base OU alias or empty
+		return startsWithBaseOU ? parts.Skip(1).ToArray() : parts;
+	}
+
+	public static OrganizationalUnit Parse(string? organizationalUnitString, OrganizationalUnitConfig? config = null)
+	{
+		return new OrganizationalUnit(ParseToArray(organizationalUnitString, config), config);
 	}
 
 	/// <inheritdoc />
 	public override bool Equals(object? obj)
 	{
-		return obj is OrganizationalUnit && String.Equals(ToString(), obj.ToString());
+		if (obj is not OrganizationalUnit other)
+			return false;
+
+		if (_nodes.Length != other._nodes.Length)
+			return false;
+
+		// Since nodes are already lowercased when stored, we can use ordinal comparison
+		for (int i = 0; i < _nodes.Length; i++)
+		{
+			if (_nodes[i] != other._nodes[i])
+				return false;
+		}
+
+		return true;
 	}
 
 	/// <inheritdoc />
 	public override int GetHashCode()
 	{
-		return Nodes.GetHashCode();
+		// Since nodes are already lowercased, we can use the standard GetHashCode
+		int hash = 17;
+		foreach (var node in _nodes)
+		{
+			hash = hash * 31 + (node?.GetHashCode() ?? 0);
+		}
+		return hash;
 	}
 }

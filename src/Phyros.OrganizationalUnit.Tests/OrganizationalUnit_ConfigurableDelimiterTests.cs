@@ -27,13 +27,12 @@ public class OrganizationalUnit_ConfigurableDelimiterTests
 		var ou = OrganizationalUnit.Parse(ouString, config);
 
 		// Verify nodes are correctly parsed
-		ou.Nodes.Length.ShouldBe(5); // 4 nodes + empty base node
-		ou.Nodes[0].ShouldBe("city");
-		ou.Nodes[1].ShouldBe("region");
-		ou.Nodes[2].ShouldBe("country");
-		ou.Nodes[3].ShouldBe("world");
-		ou.Nodes[4].ShouldBe(string.Empty);
-
+		ou.Nodes.Length.ShouldBe(4); // 4 nodes
+		ou.Nodes[0].ShouldBe("world");
+		ou.Nodes[1].ShouldBe("country");
+		ou.Nodes[2].ShouldBe("region");
+		ou.Nodes[3].ShouldBe("city");
+		
 		// Test serialization with new delimiter
 		ou.ToString().ShouldBe(ouString);
 
