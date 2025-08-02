@@ -8,7 +8,7 @@ public class OrganizationalUnit
 	private readonly OrganizationalUnitConfig _config;
 
 	/// <summary>Initializes a new instance of the <see cref="OrganizationalUnit" /> targeted to the "Empty" organizational unit that represents the base.</summary>
-	public OrganizationalUnit(OrganizationalUnitConfig? config = null) : this([], config)
+	public OrganizationalUnit(OrganizationalUnitConfig? config = null) : this(Array.Empty<string>(), config)
 	{
 		
 	}
@@ -23,7 +23,7 @@ public class OrganizationalUnit
 	internal OrganizationalUnit(IEnumerable<string> nodes, OrganizationalUnitConfig? config = null)
 	{
 		_config = config ?? OrganizationalUnitConfig.Default;
-		Nodes = [.. nodes.Select(x => x.ToLower())];
+		Nodes = nodes.Select(x => x.ToLower()).ToArray();
 	}
 	/// <summary>
 	/// Gets fully qualified nodes in order from least specific to most specific in a qualified format.  ["child", "household", "city"] would become the fully qualified nodes ["city.household.child", "city.household", "city", ""]
@@ -34,7 +34,7 @@ public class OrganizationalUnit
 	{
 		if (Nodes.Length == 1)
 		{
-			return [string.Empty];
+			return new[] { string.Empty };
 		}
 		var fullyQualifiedNodes = new List<string>();
 		var reversed = Nodes.Reverse().Skip(1).ToList();
@@ -49,7 +49,7 @@ public class OrganizationalUnit
 		}
 		// add the base node
 		fullyQualifiedNodes.Add(String.Empty);
-		return [.. fullyQualifiedNodes];
+		return fullyQualifiedNodes.ToArray();
 	}
 
 	/// <summary>
@@ -112,14 +112,14 @@ public class OrganizationalUnit
 		config ??= OrganizationalUnitConfig.Default;
 		if (string.IsNullOrWhiteSpace(organizationalUnitString))
 		{
-			return new OrganizationalUnit([string.Empty], config);
+			return new OrganizationalUnit(new[] { string.Empty }, config);
 		}
 
 		// At this point, organizationalUnitString is not null, empty, or whitespace
 		var orgUnitStr = organizationalUnitString!;
 		if (orgUnitStr.Equals(config.BaseOrganizationalUnit, StringComparison.InvariantCultureIgnoreCase))
 		{
-			return new OrganizationalUnit([string.Empty], config);
+			return new OrganizationalUnit(new[] { string.Empty }, config);
 		}
 		var split = orgUnitStr.ToLower().Split(config.Delimiter).Reverse().ToList();
 		// Check for empty or whitespace nodes (except for the final base node)
@@ -128,7 +128,7 @@ public class OrganizationalUnit
 			throw new ArgumentException("Organizational unit string contains empty or whitespace node(s).", nameof(organizationalUnitString));
 		}
 		split.Add(string.Empty);
-		return new OrganizationalUnit([.. split], config);
+		return new OrganizationalUnit(split.ToArray(), config);
 	}
 
 	/// <inheritdoc />
