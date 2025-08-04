@@ -12,18 +12,18 @@ public static class OrganizationalUnitExtensions
 		// With nodes ordered from least specific to most specific, a descendant unit will:
 		// 1. Have strictly more nodes than its parent
 		// 2. The first N nodes of the descendant will match all nodes of the parent
-		
+
 		// Can't be a descendant if it has fewer nodes than the parent
-		if (orgUnitInQuestion.Nodes.Length <= potentialParent.Nodes.Length) 
+		if (orgUnitInQuestion.Nodes.Length <= potentialParent.Nodes.Length)
 			return false;
-		
+
 		// Check if all parent nodes match the corresponding nodes in the child
 		for (int i = 0; i < potentialParent.Nodes.Length; i++)
 		{
 			if (!string.Equals(orgUnitInQuestion.Nodes[i], potentialParent.Nodes[i], StringComparison.Ordinal))
 				return false;
 		}
-		
+
 		return true;
 	}
 
@@ -48,8 +48,8 @@ public static class OrganizationalUnitExtensions
 	public static bool IsChildOf(this OrganizationalUnit orgUnitInQuestion, OrganizationalUnit potentialParent)
 	{
 		// A child has exactly one more node than its parent and is a descendant of the potential parent
-		return orgUnitInQuestion.Nodes.Length == potentialParent.Nodes.Length + 1 && 
-		       orgUnitInQuestion.IsDescendantOf(potentialParent);
+		return orgUnitInQuestion.Nodes.Length == potentialParent.Nodes.Length + 1 &&
+					 orgUnitInQuestion.IsDescendantOf(potentialParent);
 	}
 
 	/// <summary>

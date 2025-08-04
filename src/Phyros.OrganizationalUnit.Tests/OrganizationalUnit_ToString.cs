@@ -13,11 +13,10 @@ public class OrganizationalUnit_ToString
 	}
 
 	[Theory]
-	// make sure the last node is an empty string to represent the "base" node.
-	[InlineData("", "")]
-	[InlineData("one", "One", "")]
-	[InlineData("one.two", "One", "Two", "")]
-	[InlineData("one.two.three", "One", "Two", "Three", "")]
+	[InlineData("")]
+	[InlineData("one", "One")]
+	[InlineData("one.two", "One", "Two")]
+	[InlineData("one.two.three", "One", "Two", "Three")]
 	public void Properly_serializes(string expectedValue, params string[] nodes)
 	{
 		var organizationalUnit = new OrganizationalUnit(nodes);

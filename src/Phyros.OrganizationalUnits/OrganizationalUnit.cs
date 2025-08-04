@@ -9,11 +9,11 @@ public class OrganizationalUnit
 	/// is represented by an empty array.
 	/// </summary>
 	private readonly string[] _nodes; // Private backing field	
-	
+
 	/// <summary>
 	/// Gets the nodes of this organizational unit. All nodes are stored in lowercase for consistent case-insensitive behavior.
 	/// </summary>
-	public string[] Nodes => _nodes;	
+	public string[] Nodes => _nodes;
 
 	private readonly OrganizationalUnitConfig _config;
 
@@ -25,7 +25,7 @@ public class OrganizationalUnit
 	/// <summary>Initializes a new instance of the <see cref="OrganizationalUnit" /> class from a string representation.</summary>
 	/// <param name="organizationalUnitString">The organizational unit string to parse.</param>
 	/// <param name="config"></param>
-	public OrganizationalUnit(string organizationalUnitString, OrganizationalUnitConfig? config = null) 
+	public OrganizationalUnit(string organizationalUnitString, OrganizationalUnitConfig? config = null)
 		: this(ParseToArray(organizationalUnitString, config), config)
 	{
 	}
@@ -33,10 +33,10 @@ public class OrganizationalUnit
 	internal OrganizationalUnit(IEnumerable<string> nodes, OrganizationalUnitConfig? config = null)
 	{
 		_config = config ?? OrganizationalUnitConfig.Default;
-		
+
 		// Handle normalization at construction time
 		var nodeArray = nodes?.ToArray() ?? Array.Empty<string>();
-		
+
 		// Handle old format where empty node was at the end
 		if (nodeArray.Length > 0 && string.IsNullOrEmpty(nodeArray[nodeArray.Length - 1]))
 		{
@@ -48,7 +48,7 @@ public class OrganizationalUnit
 			}
 			nodeArray = correctedArray;
 		}
-		
+
 		// Apply ToLower for case-insensitivity
 		_nodes = nodeArray.Select(x => x?.ToLower() ?? string.Empty).ToArray();
 	}
@@ -64,23 +64,23 @@ public class OrganizationalUnit
 	{
 		// Create an array with room for all node combinations plus the empty string at the beginning
 		var result = new string[_nodes.Length + 1];
-		
+
 		// First element is always the empty base node
 		result[0] = string.Empty;
-		
+
 		// Generate fully qualified paths, from least specific to most specific
 		for (int i = 0; i < _nodes.Length; i++)
 		{
 			// For each iteration, take the first (i+1) nodes
 			var nodesToInclude = _nodes.Take(i + 1);
-			
+
 #if NETSTANDARD2_0
 			result[i + 1] = string.Join(_config.Delimiter.ToString(), nodesToInclude);
 #else
 			result[i + 1] = string.Join(_config.Delimiter, nodesToInclude);
 #endif
 		}
-		
+
 		return result;
 	}
 
@@ -92,7 +92,7 @@ public class OrganizationalUnit
 	{
 		if (_nodes.Length == 0)
 			return string.Empty;
-		
+
 #if NETSTANDARD2_0
         return string.Join(_config.Delimiter.ToString(), _nodes);
 #else
@@ -153,23 +153,23 @@ public class OrganizationalUnit
 
 		// Split the string into parts
 		var parts = organizationalUnitString!.Split(config.Delimiter);
-    
+
 		// Check if the first part is the base organizational unit alias or an empty string
-		bool startsWithBaseOU = parts.Length > 0 && 
-			(string.Equals(parts[0], config.BaseOrganizationalUnitAlias, StringComparison.OrdinalIgnoreCase) || 
+		bool startsWithBaseOU = parts.Length > 0 &&
+			(string.Equals(parts[0], config.BaseOrganizationalUnitAlias, StringComparison.OrdinalIgnoreCase) ||
 			 string.IsNullOrEmpty(parts[0]));
-    
+
 		// Check for empty nodes except when it's the first node and we're dealing with a base OU alias
 		for (int i = 0; i < parts.Length; i++)
 		{
 			if (string.IsNullOrWhiteSpace(parts[i]) && !(i == 0 && startsWithBaseOU))
 			{
 				throw new ArgumentException(
-					"Organizational unit string cannot have empty nodes, except for the root node.", 
+					"Organizational unit string cannot have empty nodes, except for the root node.",
 					nameof(organizationalUnitString));
 			}
 		}
-		
+
 		// Skip the first part if it's the base OU alias or empty
 		return startsWithBaseOU ? parts.Skip(1).ToArray() : parts;
 	}
